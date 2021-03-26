@@ -1,0 +1,29 @@
+WIN7
+Start - Vezérlőpult - Rendszer és biztonság - Rendszer
+
+i5-3317U 1.7 1945 Tomi
+i3-3217U 1.8 1186 Kriszta
+
+drag  and drop
+https://jsfiddle.net/radonirinamaminiaina/zfnj5rv4/
+
+https://www.w3schools.com/html/tryit.asp?filename=tryhtml5_draganddrop
+
+datatransfer
+
+https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/getData
+
+
+
+- ondragstart - start to drag draggedID set
+- ondragend - Clear 
+
+target
+- ondrop - droppped on taret
+- ondragover - set the target ID
+
+
+
+https://betterprogramming.pub/create-a-sortable-list-with-draggable-items-using-javascript-9ef38f96b258
+
+https://jqueryui.com/sortable/
