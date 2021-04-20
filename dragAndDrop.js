@@ -1,41 +1,70 @@
+//#region Drag And Drop
 var list = document.getElementById('list')
+var resultList = document.getElementById('resultList');
 var dragging, draggedOver;
-var daniText = ["a","szöveg","sorba","Ez","most","állítva!","van",];
+var daniText = ["", "", "", "", "", "", "","a", "szöveg", "sorba", "Ez", "most", "állítva!", "van",];
+var listIndex = 0;
 
-function renderItems(data)
+function RenderItems(data)
 {
+    listIndex = 0;
     for(let i = 0; i < daniText.length; i++)
     {
-        var node = document.createElement("li");    
-        node.draggable = true
-        node.style.backgroundColor = '#b3ecff';
-        node.addEventListener('drag', setDragging);
-        node.addEventListener('dragover', setDraggedOver);
-        node.addEventListener('drop', compare);
+        var node = document.createElement("li");
+        node.draggable = true;
+        node.id = i;
+        node.style.backgroundColor = '#999999';
+        node.addEventListener('drag', SetDragging);
+        node.addEventListener('dragover', SetDraggedOver);
+        node.addEventListener('drop', Compare);
         node.innerText = daniText[i];
         node.tabIndex = i;
-        list.appendChild(node);
+
+        if (i < 7)
+        {
+            resultList.appendChild(node);        
+        }
+        else
+        {
+            node.id = listIndex;
+            list.appendChild(node);
+            listIndex++;
+        }
     }
 }
 
-function  compare()
+function  Compare(index)
 {
-    if(dragging.tabIndex != draggedOver.tabIndex)
+    if (dragging.innerText != "" && dragging.tabIndex != draggedOver.tabIndex)
     {
         var temp = draggedOver.innerText;
-        list.children[draggedOver.tabIndex].innerText = dragging.innerText;
-        list.children[dragging.tabIndex].innerText = temp;
+
+        if (draggedOver.tabIndex < 7) {
+            resultList.children[draggedOver.tabIndex].innerText = dragging.innerText;
+            if (dragging.tabIndex < 7) {
+                resultList.children[dragging.tabIndex].innerText = temp;
+            }
+            else
+            {              
+                list.removeChild(list.childNodes[dragging.id]);
+                for (let z = 0; z < list.childElementCount; z++)
+                {
+                    list.children[z].id = z;
+                }
+            }
+        }
     }
 }
 
-function setDraggedOver(e){
+function SetDraggedOver(e){
   e.preventDefault();
   draggedOver = e.target;
 }
 
-function setDragging(e){
+function SetDragging(e){
     dragging = e.target;
 }
 
-renderItems();
+RenderItems()
+//#endregion
 
