@@ -12,7 +12,6 @@ function RenderItems(data)
     {
         var node = document.createElement("li");
         node.draggable = true;
-        node.id = i;
         node.style.backgroundColor = '#999999';
         node.addEventListener('drag', SetDragging);
         node.addEventListener('dragover', SetDraggedOver);
@@ -22,6 +21,7 @@ function RenderItems(data)
 
         if (i < 7)
         {
+            node.id = i;
             resultList.appendChild(node);        
         }
         else
@@ -39,9 +39,16 @@ function  Compare(index)
     {
         var temp = draggedOver.innerText;
 
-        if (draggedOver.tabIndex < 7) {
+        if (dragging.tabIndex >= 7 && draggedOver.innerText != "")
+        {
+
+        }
+        else if(draggedOver.tabIndex < 7)
+        {
             resultList.children[draggedOver.tabIndex].innerText = dragging.innerText;
-            if (dragging.tabIndex < 7) {
+
+            if (dragging.tabIndex < 7)
+            {
                 resultList.children[dragging.tabIndex].innerText = temp;
             }
             else
