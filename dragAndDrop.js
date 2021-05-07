@@ -1,5 +1,57 @@
-//#region Drag And Drop
+var dragging, draggedOver;
+var counter = 0;
+var lastValue = "";
+var DISCstyle = "";
+var pageCount = 1;
 
+//#region Drag And Drop
+function Compare()
+{
+    var actualResultList = document.getElementById(document.getElementById(draggedOver.id).parentElement.id);
+    var actualList = document.getElementById(document.getElementById(dragging.id).parentElement.id);
+
+    var actualBlock = document.getElementById(document.getElementById(document.getElementById(actualList.id).parentElement.id).parentElement.id) ==
+                    document.getElementById(document.getElementById(document.getElementById(actualResultList.id).parentElement.id).parentElement.id);
+    
+    if (dragging.innerText != "" && dragging.tabIndex != draggedOver.tabIndex && actualBlock)
+    {
+        var temp = draggedOver.innerText;
+
+        if (dragging.tabIndex >= 4 && draggedOver.innerText != "")
+        {
+
+        }
+        else if(draggedOver.tabIndex < 4)
+        {
+            actualResultList.children[draggedOver.tabIndex].innerText = dragging.innerText;
+
+            if (dragging.tabIndex < 4)
+            {
+                actualResultList.children[dragging.tabIndex].innerText = temp;
+            }
+            else
+            {              
+                actualList.removeChild(actualList.childNodes[dragging.tabIndex-4]);
+                for (let z = 0; z < actualList.childElementCount; z++)
+                {
+                    actualList.children[z].tabIndex = z+4;
+                }
+            }
+        }
+    }
+}
+
+function SetDraggedOver(e){
+    e.preventDefault();
+    draggedOver = e.target;
+  }
+  
+  function SetDragging(e){
+      dragging = e.target;
+  }
+//#endregion
+
+//#region SQLData
 //API is not functioning yet.
 var words = [{"wordID":"1","value":"REG","style":"D","text":"Végrehajtó","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"2","value":"REG","style":"D","text":"Büntető","description":"NoDY","nodeId":"","positinon":""},
@@ -197,12 +249,9 @@ var words = [{"wordID":"1","value":"REG","style":"D","text":"Végrehajtó","desc
 {"wordID":"194","value":"POL","style":"C","text":"Tisztviselő","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"195","value":"POL","style":"C","text":"Együttműködő","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"196","value":"POL","style":"C","text":"Hierarchia Tisztelő","description":"NoDY","nodeId":"","positinon":""}];
+//#endregion
 
-var dragging, draggedOver;
-var counter = 0;
-var lastValue = "";
-var DISCstyle = "";
-
+//#region RandomGenerator
 function rand(min, max)
 {
     return Math.floor( Math.random() * (max-min+1) ) + min;
@@ -250,34 +299,9 @@ function RandomWord(nodeId)
     }
     return result;
 }
+//#endregion
 
-function RenderNods(newResultListId,newListId)
-{
-    for(let i = 0; i < 8; i++)
-    {
-        var node = document.createElement("li");
-        node.draggable = true;
-        node.style.backgroundColor = '#999999';
-        node.addEventListener('drag', SetDragging);
-        node.addEventListener('dragover', SetDraggedOver);
-        node.addEventListener('drop', Compare);
-        node.tabIndex = i;
-
-        if (i < 4)
-        {
-            node.id = newResultListId+i;
-            node.innerText = "";
-            document.getElementById(newResultListId).appendChild(node);       
-        }
-        else
-        {
-            node.id = newListId+i;
-            node.innerText = RandomWord(node.id);
-            document.getElementById(newListId).appendChild(node);
-        }
-    }
-}
-
+//#region Html manipulation
 function ClearQuestions()
 {
     var questionDiv = document.getElementById('questions1');
@@ -317,55 +341,50 @@ function BlockGenerator(questionNumber)
     RenderNods(newResultList.id,newList.id);
 }
 
-function Compare(index)
+function RenderNods(newResultListId,newListId)
 {
-    var actualResultList = document.getElementById(document.getElementById(draggedOver.id).parentElement.id);
-    var actualList = document.getElementById(document.getElementById(dragging.id).parentElement.id);
-
-    var actualBlock = document.getElementById(document.getElementById(document.getElementById(actualList.id).parentElement.id).parentElement.id) ==
-                    document.getElementById(document.getElementById(document.getElementById(actualResultList.id).parentElement.id).parentElement.id);
-    
-    if (dragging.innerText != "" && dragging.tabIndex != draggedOver.tabIndex && actualBlock)
+    for(let i = 0; i < 8; i++)
     {
-        var temp = draggedOver.innerText;
+        var node = document.createElement("li");
+        node.draggable = true;
+        node.style.backgroundColor = '#999999';
+        node.addEventListener('drag', SetDragging);
+        node.addEventListener('dragover', SetDraggedOver);
+        node.addEventListener('drop', Compare);
+        node.tabIndex = i;
 
-        if (dragging.tabIndex >= 4 && draggedOver.innerText != "")
+        if (i < 4)
         {
-
+            node.id = newResultListId+i;
+            node.innerText = "";
+            document.getElementById(newResultListId).appendChild(node);       
         }
-        else if(draggedOver.tabIndex < 4)
+        else
         {
-            actualResultList.children[draggedOver.tabIndex].innerText = dragging.innerText;
-
-            if (dragging.tabIndex < 4)
-            {
-                actualResultList.children[dragging.tabIndex].innerText = temp;
-            }
-            else
-            {              
-                actualList.removeChild(actualList.childNodes[dragging.tabIndex-4]);
-                for (let z = 0; z < actualList.childElementCount; z++)
-                {
-                    actualList.children[z].tabIndex = z+4;
-                }
-            }
+            node.id = newListId+i;
+            node.innerText = RandomWord(node.id);
+            document.getElementById(newListId).appendChild(node);
         }
     }
 }
-
-function SetDraggedOver(e){
-  e.preventDefault();
-  draggedOver = e.target;
-}
-
-function SetDragging(e){
-    dragging = e.target;
-}
 //#endregion
 
-ClearQuestions();
-for(let i = 0; i < 7; i++)
+function NewPage()
 {
-    BlockGenerator(i+1);
+    if(pageCount < 7)
+    {
+        ClearQuestions();
+
+        for(let i = 0; i < 7; i++)
+        {
+            BlockGenerator(i+1);
+        }    
+        pageCount++;
+    }
 }
+
+NewPage();
+
+document.getElementById('nextPage').onclick = NewPage;
+
 
