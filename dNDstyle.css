@@ -8,7 +8,7 @@ body{
   background-color: rgb(255, 255, 255);
   padding: 20px;
 }
-#container, #resultContainer {
+.container, .resultContainer {
   width: 300px;
   display: block;
   margin: auto;
