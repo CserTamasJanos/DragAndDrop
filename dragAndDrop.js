@@ -227,7 +227,7 @@ function RandomWord(nodeId)
                 lastValue = words[randomWord].value;
                 DISCstyle += words[randomWord].style;
                 words[randomWord].nodeId = nodeId;
-                result = words[randomWord].text;
+                result = words[randomWord].text+ " " + words[randomWord].value + " " + words[randomWord].style;;
                 wordIsOk = true;
                 counter++;              
             }
@@ -235,13 +235,13 @@ function RandomWord(nodeId)
             {
                 DISCstyle += words[randomWord].style;
                 words[randomWord].nodeId = nodeId;
-                result = words[randomWord].text;
+                result = words[randomWord].text + " " + words[randomWord].value + " " + words[randomWord].style;
                 wordIsOk = true;
                 counter++;
             }
         }
 
-        if(counter == 3)
+        if(counter == 4)
         {
             counter = 0;
             DISCstyle = "";
