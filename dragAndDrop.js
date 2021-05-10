@@ -2,7 +2,14 @@ var dragging, draggedOver;
 var counter = 0;
 var lastValue = "";
 var DISCstyle = "";
-var pageCount = 1;
+var nodeCount = 8;
+var sideNodeCount = 4;
+var actualPageCount = 1;
+const PageLimiter = 8;
+const BlockCountPerPage = 7;
+var actualQuestionCount = 1;
+const MaxQuestionCOunt = 49;
+var firstSite = true;
 
 //#region Drag And Drop
 function Compare()
@@ -15,26 +22,29 @@ function Compare()
     
     if (dragging.innerText != "" && dragging.tabIndex != draggedOver.tabIndex && actualBlock)
     {
-        var temp = draggedOver.innerText;
+        var tempText = draggedOver.innerText;
+        var tempId = draggedOver.id;
 
-        if (dragging.tabIndex >= 4 && draggedOver.innerText != "")
+        if (dragging.tabIndex >= sideNodeCount && draggedOver.innerText != "")
         {
 
         }
-        else if(draggedOver.tabIndex < 4)
+        else if(draggedOver.tabIndex < sideNodeCount)
         {
             actualResultList.children[draggedOver.tabIndex].innerText = dragging.innerText;
+            actualResultList.children[draggedOver.tabIndex].id = dragging.id;
 
-            if (dragging.tabIndex < 4)
+            if (dragging.tabIndex < sideNodeCount)
             {
-                actualResultList.children[dragging.tabIndex].innerText = temp;
+                actualResultList.children[dragging.tabIndex].innerText = tempText;
+                actualResultList.children[dragging.tabIndex].id = tempId;
             }
             else
             {              
-                actualList.removeChild(actualList.childNodes[dragging.tabIndex-4]);
+                actualList.removeChild(actualList.childNodes[dragging.tabIndex-sideNodeCount]);
                 for (let z = 0; z < actualList.childElementCount; z++)
                 {
-                    actualList.children[z].tabIndex = z+4;
+                    actualList.children[z].tabIndex = z+sideNodeCount;
                 }
             }
         }
@@ -53,7 +63,7 @@ function SetDraggedOver(e){
 
 //#region SQLData
 //API is not functioning yet.
-var words = [{"wordID":"1","value":"REG","style":"D","text":"Végrehajtó","description":"NoDY","nodeId":"","positinon":""},
+var words = [{"wordID":"1","value":"REG","style":"D","text":"Végrehajtó","description":"NoDY","nodeId":"","positinon":""},//NodeId is QuestionId
 {"wordID":"2","value":"REG","style":"D","text":"Büntető","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"3","value":"REG","style":"D","text":"Fegyelmező","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"4","value":"REG","style":"D","text":"Rendfenntartó","description":"NoDY","nodeId":"","positinon":""},
@@ -249,6 +259,8 @@ var words = [{"wordID":"1","value":"REG","style":"D","text":"Végrehajtó","desc
 {"wordID":"194","value":"POL","style":"C","text":"Tisztviselő","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"195","value":"POL","style":"C","text":"Együttműködő","description":"NoDY","nodeId":"","positinon":""},
 {"wordID":"196","value":"POL","style":"C","text":"Hierarchia Tisztelő","description":"NoDY","nodeId":"","positinon":""}];
+
+var sevenWords = [];
 //#endregion
 
 //#region RandomGenerator
@@ -257,7 +269,7 @@ function rand(min, max)
     return Math.floor( Math.random() * (max-min+1) ) + min;
 }
 
-function RandomWord(nodeId)
+function RandomWord()//nodeId)
 {
     var wordIsOk = false;
     var wordIsDrawable = false;
@@ -265,7 +277,7 @@ function RandomWord(nodeId)
 
     while(!wordIsOk)
     {
-        var randomWord = rand(0,195);
+        var randomWord = rand(0,words.length-1);
         var actualWord = words.find(z=>z.wordID === (randomWord+1).toString());
         wordIsDrawable = actualWord.nodeId === "";
 
@@ -273,31 +285,31 @@ function RandomWord(nodeId)
         {
             if(counter === 0)
             {
-                lastValue = words[randomWord].value;
+                lastValue = words[randomWord].value;//Kiszervezni majd...Hatékonyság...
                 DISCstyle += words[randomWord].style;
-                words[randomWord].nodeId = nodeId;
+                //words[randomWord].nodeId = nodeId;
                 result = words[randomWord].text+ " " + words[randomWord].value + " " + words[randomWord].style;;
                 wordIsOk = true;
                 counter++;              
             }
-            else if(counter < 4 && lastValue === words[randomWord].value && !DISCstyle.includes(words[randomWord].style))
+            else if(counter < sideNodeCount && lastValue === words[randomWord].value && !DISCstyle.includes(words[randomWord].style))
             {
                 DISCstyle += words[randomWord].style;
-                words[randomWord].nodeId = nodeId;
+                //words[randomWord].nodeId = nodeId;
                 result = words[randomWord].text + " " + words[randomWord].value + " " + words[randomWord].style;
                 wordIsOk = true;
                 counter++;
             }
         }
 
-        if(counter == 4)
+        if(counter == sideNodeCount)
         {
             counter = 0;
             DISCstyle = "";
             lastValue = "";
         }
     }
-    return result;
+    return [result, randomWord];
 }
 //#endregion
 
@@ -333,6 +345,7 @@ function BlockGenerator(questionNumber)
 
     let newList = document.createElement('ul');
     newList.id = `list${questionNumber}`;
+
     newList.className = 'pointless';
 
     document.getElementById(newResultContainer.id).appendChild(newResultList);
@@ -343,7 +356,13 @@ function BlockGenerator(questionNumber)
 
 function RenderNods(newResultListId,newListId)
 {
-    for(let i = 0; i < 8; i++)
+    if(actualPageCount === 8)
+    {
+        nodeCount = 14;
+        sideNodeCount = 7;
+    }
+
+    for(let i = 0; i < nodeCount; i++)
     {
         var node = document.createElement("li");
         node.draggable = true;
@@ -353,7 +372,7 @@ function RenderNods(newResultListId,newListId)
         node.addEventListener('drop', Compare);
         node.tabIndex = i;
 
-        if (i < 4)
+        if (i < sideNodeCount)
         {
             node.id = newResultListId+i;
             node.innerText = "";
@@ -361,30 +380,135 @@ function RenderNods(newResultListId,newListId)
         }
         else
         {
-            node.id = newListId+i;
-            node.innerText = RandomWord(node.id);
-            document.getElementById(newListId).appendChild(node);
+            if(nodeCount < 14)//MEgnézni, hogy esli if-e...
+            {
+                var resultAndID = RandomWord();
+                node.id = newListId.substring(4) + "_" + words[resultAndID[1]].wordID;
+                words[resultAndID[1]].nodeId = node.id;
+                node.innerText = resultAndID[0];
+                document.getElementById(newListId).appendChild(node);
+            }
+            else
+            {
+                node.id = newListId.substring(4) + "_" + sevenWords[counter].wordID;
+                sevenWords[counter].nodeId = node.id;
+                node.innerText = sevenWords[counter].text + " " + sevenWords[counter].value + " " + sevenWords[counter].style;
+                document.getElementById(newListId).appendChild(node);
+            }
         }
     }
 }
+
+function QuestionsAreAnswered()
+{
+    for(let i = 0; i < BlockCountPerPage; i++)
+    {
+        var actualUL = document.getElementById(`list${(actualQuestionCount+i)-BlockCountPerPage}`)
+        if(actualUL.childNodes.length > 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 //#endregion
 
-function NewPage()
+function SavePageData()
 {
-    if(pageCount < 7)
+    for(let i = 0;i < BlockCountPerPage; i++)
     {
-        ClearQuestions();
-
-        for(let i = 0; i < 7; i++)
+        var actualResultUL = document.getElementById(`resultList${(actualQuestionCount+i)-BlockCountPerPage}`)
+        for(let z = 0;z < actualResultUL.childElementCount; z++)
         {
-            BlockGenerator(i+1);
-        }    
-        pageCount++;
+            var aWord = actualResultUL.children[z].id.split('_');
+            var saveWord = words.find(z=>z.wordID === (aWord[1]));
+            saveWord.nodeId = aWord[0];
+            saveWord.positinon = actualResultUL.children[z].tabIndex+1;//kétszer keresek nem jó...
+        }
     }
 }
 
-NewPage();
+function Test()
+{
+    var positinon = 1;
+    var questionNumber = 1;
+    for(let i = 0;i < words.length; i++ )
+    {
+        if(positinon === 5)
+        {
+            positinon = 1;
+            questionNumber++;
+        }
 
-document.getElementById('nextPage').onclick = NewPage;
+        words[i].nodeId = questionNumber;
+        words[i].positinon = positinon;
+        positinon++;
+    }
+    actualPageCount = 8;
+}
+
+
+function NewPage()
+{
+    Test();
+
+    if(actualPageCount < PageLimiter)
+    {
+        ClearQuestions();
+        var actualMaxQuestionCount = actualQuestionCount + BlockCountPerPage;
+
+        for(actualQuestionCount; actualQuestionCount < actualMaxQuestionCount; actualQuestionCount++)
+        {
+           BlockGenerator(actualQuestionCount);
+        }    
+        actualPageCount++;
+    }
+
+    if(actualPageCount === PageLimiter)
+    {
+        for(let i = 0; i < words.length; i++)
+        {
+            if(words[i].positinon === 1)
+            {
+                sevenWords.push({"wordID":`${words[i].wordID}`,"value":`${words[i].value}`,"style":`${words[i].style}`,"text":`${words[i].text}`,
+                                "description":`${words[i].description}`,"nodeId":`${words[i].nodeId}`,"positinon":`${words[i].positinon}`});
+            }
+        }
+        counter = 0;
+        ClearQuestions();
+            //NA ezt kell megnézni vagyis a BLockgeneratort -- Random
+        for(actualQuestionCount; actualQuestionCount < 57; actualQuestionCount++)//átírni constot var ra...
+        {
+            BlockGenerator(actualQuestionCount);
+        }
+        actualPageCount = 9;
+    }
+}
+
+function CheckAndGenerate()
+{
+    if(firstSite)
+    {
+        NewPage();
+        firstSite = false;
+    }
+    else if(QuestionsAreAnswered())
+    {
+        SavePageData();
+        NewPage();
+    }
+    else
+    {
+        window.alert("Még nem húzott át minden elemet!");
+    }
+}
+
+CheckAndGenerate()
+
+document.getElementById('nextPage').onclick = CheckAndGenerate;
+
+
+
+
 
 
