@@ -14,16 +14,13 @@ body{
   margin: auto;
   float: left;
 }
-
 .questions{
   margin: 0 auto;
   width: 100%;
 }
-
 .lists {
   list-style: none;
 }
-
 .pointless li {
   margin: 10px;
   cursor: pointer;
@@ -31,18 +28,20 @@ body{
   list-style: none;
   height: 25px;
 }
-
 .block {
   margin: 0 auto;
   overflow: hidden;
 }
-
 .btnContainer{
   margin: 0 auto;
   overflow: hidden;
   text-align: center;
 }
-
 #nextPage{
   width: 100%;
 }
+.btn-secondary:hover{
+  background-color: #cc0000 !important;
+  border-color: #990000 !important;
+}
+

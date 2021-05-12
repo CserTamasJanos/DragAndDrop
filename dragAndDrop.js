@@ -5,11 +5,14 @@ var DISCstyle = "";
 var nodeCount = 8;
 var sideNodeCount = 4;
 var actualPageCount = 1;
+var actualQuestionCount = 1;
+var firstSite = true;
+
 const PageLimiter = 8;
 const BlockCountPerPage = 7;
-var actualQuestionCount = 1;
+const BlockMax = 57;
 const MaxQuestionCOunt = 49;
-var firstSite = true;
+
 
 //#region Drag And Drop
 function Compare()
@@ -285,9 +288,8 @@ function RandomWord()//nodeId)
         {
             if(counter === 0)
             {
-                lastValue = words[randomWord].value;//Kiszervezni majd...Hatékonyság...
+                lastValue = words[randomWord].value;
                 DISCstyle += words[randomWord].style;
-                //words[randomWord].nodeId = nodeId;
                 result = words[randomWord].text+ " " + words[randomWord].value + " " + words[randomWord].style;;
                 wordIsOk = true;
                 counter++;              
@@ -295,7 +297,6 @@ function RandomWord()//nodeId)
             else if(counter < sideNodeCount && lastValue === words[randomWord].value && !DISCstyle.includes(words[randomWord].style))
             {
                 DISCstyle += words[randomWord].style;
-                //words[randomWord].nodeId = nodeId;
                 result = words[randomWord].text + " " + words[randomWord].value + " " + words[randomWord].style;
                 wordIsOk = true;
                 counter++;
@@ -380,7 +381,7 @@ function RenderNods(newResultListId,newListId)
         }
         else
         {
-            if(nodeCount < 14)//MEgnézni, hogy esli if-e...
+            if(nodeCount < 14)//Megnézni, hogy esli if-e...
             {
                 var resultAndID = RandomWord();
                 node.id = newListId.substring(4) + "_" + words[resultAndID[1]].wordID;
@@ -394,6 +395,7 @@ function RenderNods(newResultListId,newListId)
                 sevenWords[counter].nodeId = node.id;
                 node.innerText = sevenWords[counter].text + " " + sevenWords[counter].value + " " + sevenWords[counter].style;
                 document.getElementById(newListId).appendChild(node);
+                counter++;
             }
         }
     }
@@ -413,6 +415,7 @@ function QuestionsAreAnswered()
 }
 //#endregion
 
+//#region Control
 function SavePageData()
 {
     for(let i = 0;i < BlockCountPerPage; i++)
@@ -421,9 +424,17 @@ function SavePageData()
         for(let z = 0;z < actualResultUL.childElementCount; z++)
         {
             var aWord = actualResultUL.children[z].id.split('_');
-            var saveWord = words.find(z=>z.wordID === (aWord[1]));
+            var saveWord;
+            if(actualPageCount < 8)
+            {
+                saveWord = words.find(z=>z.wordID === (aWord[1]));
+            }
+            else
+            {
+                saveWord = sevenWords.find(z=>z.wordID === (aWord[1]));
+            }
             saveWord.nodeId = aWord[0];
-            saveWord.positinon = actualResultUL.children[z].tabIndex+1;//kétszer keresek nem jó...
+            saveWord.positinon = actualResultUL.children[z].tabIndex+1;
         }
     }
 }
@@ -445,12 +456,17 @@ function Test()
         positinon++;
     }
     actualPageCount = 8;
+    actualQuestionCount = 50;
 }
 
+var testOn = true;
 
 function NewPage()
 {
-    Test();
+/*     if(testOn)
+    {
+        Test();
+    } */
 
     if(actualPageCount < PageLimiter)
     {
@@ -476,12 +492,14 @@ function NewPage()
         }
         counter = 0;
         ClearQuestions();
-            //NA ezt kell megnézni vagyis a BLockgeneratort -- Random
-        for(actualQuestionCount; actualQuestionCount < 57; actualQuestionCount++)//átírni constot var ra...
+
+        for(actualQuestionCount; actualQuestionCount < 57; actualQuestionCount++)
         {
             BlockGenerator(actualQuestionCount);
         }
         actualPageCount = 9;
+        document.getElementById('nextPage').innerText = 'Teszt lezárása';
+        testOn = false;
     }
 }
 
@@ -502,6 +520,7 @@ function CheckAndGenerate()
         window.alert("Még nem húzott át minden elemet!");
     }
 }
+//#endregion
 
 CheckAndGenerate()
 
