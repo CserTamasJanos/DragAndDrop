@@ -2,11 +2,14 @@ var dragging, draggedOver;
 var counter = 0;
 var lastValue = "";
 var DISCstyle = "";
+var actualValues = "";
 var nodeCount = 8;
 var sideNodeCount = 4;
 var actualPageCount = 0;
 var actualQuestionCount = 1;
 var firstSite = true;
+var firstGenerate = true;
+var MoreQuestions = true;
 
 const PageLimiter = 8;
 const BlockCountPerPage = 7;
@@ -279,24 +282,46 @@ function RandomWord()//nodeId)
 
     while(!wordIsOk)
     {
-        var randomWord = rand(0,words.length-1);
-        var actualWord = words.find(z=>z.wordID === (randomWord+1).toString());
+        var randomWord;
+        var actualWord;
+        
+        if(sideNodeCount < 7)
+        {
+            randomWord = rand(0,words.length-1);
+            actualWord = words.find(z=>z.wordID === (randomWord+1).toString());
+        }
+        else
+        {
+            randomWord = rand(0,sevenWords.length-1);
+            actualWord = sevenWords[randomWord];
+        }
+
         wordIsDrawable = actualWord.nodeId === "";
 
         if(wordIsDrawable)
         {
             if(counter === 0)
             {
-                lastValue = words[randomWord].value;
-                DISCstyle += words[randomWord].style;
-                result = actualPageCount + " " + words[randomWord].text+ " " + words[randomWord].value + " " + words[randomWord].style;;
+                //Ugyan az a 3!
+                lastValue = actualWord.value;
+                DISCstyle += actualWord.style;
+                actualValues += actualWord.value;
+                result = actualPageCount + " " + actualWord.text + " " + actualWord.value +  " " + actualWord.style;
                 wordIsOk = true;
                 counter++;              
             }
-            else if(counter < sideNodeCount && lastValue === words[randomWord].value && !DISCstyle.includes(words[randomWord].style))
+            else if(counter < sideNodeCount && lastValue === actualWord.value && !DISCstyle.includes(actualWord.style) && actualPageCount < 8)
             {
-                DISCstyle += words[randomWord].style;
-                result = actualPageCount + " " + words[randomWord].text + " " + words[randomWord].value + " " + words[randomWord].style;
+                DISCstyle += actualWord.style;
+                result = actualPageCount + " " + actualWord.text + " " + actualWord.value + " " + actualWord.style;
+                wordIsOk = true;
+                counter++;
+            }
+            else if(counter < sideNodeCount && !actualValues.includes(actualWord.value) && actualPageCount == 8)
+            {
+                DISCstyle += actualWord.style;
+                actualValues += actualWord.value;
+                result = actualPageCount + " " + actualWord.text + " " + actualWord.value + " " + actualWord.style;
                 wordIsOk = true;
                 counter++;
             }
@@ -307,6 +332,7 @@ function RandomWord()//nodeId)
             counter = 0;
             DISCstyle = "";
             lastValue = "";
+            actualValues = "";
         }
     }
     return [result, randomWord];
@@ -316,8 +342,7 @@ function RandomWord()//nodeId)
 //#region Html manipulation
 function ClearQuestions()
 {
-    var questionDiv = document.getElementById('questions1');
-    questionDiv.innerHTML = '';
+    document.getElementById('questions1').innerHTML = '';
 }
 
 function BlockGenerator(questionNumber)
@@ -374,22 +399,19 @@ function RenderNods(newResultListId,newListId)
         }
         else
         {
-            if(nodeCount < 14)
+            var resultAndID = RandomWord();
+            node.id = newListId.substring(4)
+            if(actualPageCount < 8)
             {
-                var resultAndID = RandomWord();
-                node.id = newListId.substring(4) + "_" + words[resultAndID[1]].wordID;
-                words[resultAndID[1]].nodeId = node.id;
-                node.innerText = resultAndID[0];
-                document.getElementById(newListId).appendChild(node);
+                node.id += "_" + words[resultAndID[1]].wordID;
             }
             else
             {
-                node.id = newListId.substring(4) + "_" + sevenWords[counter].wordID;
-                sevenWords[counter].nodeId = node.id;
-                node.innerText = actualPageCount + " " + sevenWords[counter].text + " " + sevenWords[counter].value + " " + sevenWords[counter].style;
-                document.getElementById(newListId).appendChild(node);
-                counter++;
+                node.id += "_" + sevenWords[resultAndID[1]].wordID;  
             }
+            words[resultAndID[1]].nodeId = node.id;
+            node.innerText = resultAndID[0];
+            document.getElementById(newListId).appendChild(node);
         }
     }
 }
@@ -411,13 +433,18 @@ function StartAndFinish(pageCount)
     pForStart1.className = '';
     pForStart1.id = '';
     pForStart1.innerText = pageCount === 0 ? "Minden kérdést alaposan fontolj meg. Minden oldalon hét kérdést találsz, ha új oldalra navigáltál, vissza már nem tudsz lapozni." :
-                                                "Sikeresen kitöltötted a tesztet, hamarosan megkapod az eredményt";
+                                                "Sikeresen kitöltötted a tesztet, hamarosan megkapod az eredményt.";
 
     document.getElementById('questions1').appendChild(textContainerDiv);
     document.getElementById(textContainerDiv.id).appendChild(h3ForTextContainer);
     document.getElementById(textContainerDiv.id).appendChild(pForStart1);
-}
 
+    if(pageCount === 9)
+    {
+        var buttonContainer = document.getElementById('buttonContainer')
+        document.getElementById('home').removeChild(buttonContainer);
+    }
+}
 //#endregion
 
 //#region Control
@@ -485,7 +512,7 @@ function Test()
 
 function NewQuestionPage()
 {
-    if(actualPageCount < 8)//actualPageCount < PageLimiter)//ide is goSeven
+    if(actualPageCount < 8)
     {
         ClearQuestions();
         var actualMaxQuestionCount = actualQuestionCount + BlockCountPerPage;
@@ -494,7 +521,6 @@ function NewQuestionPage()
         {
            BlockGenerator(actualQuestionCount);
         }    
-        //actualPageCount++;
     }
     if(actualPageCount === 8)
     {
@@ -503,7 +529,7 @@ function NewQuestionPage()
             if(words[i].positinon === 1)
             {
                 sevenWords.push({"wordID":`${words[i].wordID}`,"value":`${words[i].value}`,"style":`${words[i].style}`,"text":`${words[i].text}`,
-                                "description":`${words[i].description}`,"nodeId":`${words[i].nodeId}`,"positinon":`${words[i].positinon}`});
+                                "description":`${words[i].description}`,"nodeId":"","positinon":`${words[i].positinon}`});
             }
         }
 
@@ -519,24 +545,18 @@ function NewQuestionPage()
     return actualPageCount === 8 ? false : true;
 }
 
-var firstGenerate = true;
-var MoreQuestions = true;
-
 function CheckAndGenerate()
 {
     if(actualPageCount === 0)
     {
-        //Bevezetőszöveg
         StartAndFinish(actualPageCount);
     }
     if(actualPageCount > 0 && actualPageCount < 9)
     {
         if(!firstGenerate)
         {
-            //Huzigatás
             if(QuestionsAreAnswered())
             {
-                //Mentés
                 SavePageData();
 
                 if(MoreQuestions)
@@ -553,7 +573,6 @@ function CheckAndGenerate()
     }
     if(actualPageCount === 9)
     {
-        //Zárószöveg
         StartAndFinish(actualPageCount);
     }
 
